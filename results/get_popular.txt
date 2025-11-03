@@ -1,0 +1,128 @@
+start with empty database
+
+make clean and then make all
+
+pin server to core 1 ---> taskset -c 1 ./server
+
+populate the db and cache --->  echo "Starting cache warm-up..."
+                                for i in {1..100}; do \
+                                    curl -X POST -d "key=key_$i&value=val_$i" http://127.0.0.1:8080/create > /dev/null; \
+                                done
+                                echo "Cache warm-up complete. 100 keys populated."
+
+pin db to core 0 ---> ps -fp $(pgrep -u postgres)
+                      sudo taskset -pc 0 571
+
+pin load gen to core 2 and 3 ---> taskset -c 2,3 ./load_generator http://127.0.0.1:8080 1 300 get_popular
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------
+
+shivam_sanap@DESKTOP-SHIVAM:~/cs744_project$ taskset -c 2,3 ./load_generator http://127.0.0.1:8080 1 300 get_popular
+--- CS744 Load Generator ---
+Target Server:   http://127.0.0.1:8080
+Load Level:      1 threads
+Test Duration:   300 seconds
+Workload:        get_popular
+
+Starting load test...
+
+Time's up! Signaling threads to stop and collecting results...
+All threads finished.
+
+--- Load Test Results ---
+Total Successful Requests: 1106624
+Total Failed Requests:     0
+Test Duration:             300 s
+
+Average Throughput:      3688.75 reqs/sec
+Average Response Time:   0.259094 ms
+
+-----------------------------------------------------------------------------------------------------------------------------------
+
+shivam_sanap@DESKTOP-SHIVAM:~/cs744_project$ taskset -c 2,3 ./load_generator http://127.0.0.1:8080 2 300 get_popular
+--- CS744 Load Generator ---
+Target Server:   http://127.0.0.1:8080
+Load Level:      2 threads
+Test Duration:   300 seconds
+Workload:        get_popular
+
+Starting load test...
+
+Time's up! Signaling threads to stop and collecting results...
+All threads finished.
+
+--- Load Test Results ---
+Total Successful Requests: 1828214
+Total Failed Requests:     0
+Test Duration:             300 s
+
+Average Throughput:      6094.05 reqs/sec
+Average Response Time:   0.314466 ms
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+shivam_sanap@DESKTOP-SHIVAM:~/cs744_project$ taskset -c 2,3 ./load_generator http://127.0.0.1:8080 3 300 get_popular
+--- CS744 Load Generator ---
+Target Server:   http://127.0.0.1:8080
+Load Level:      3 threads
+Test Duration:   300 seconds
+Workload:        get_popular
+
+Starting load test...
+
+Time's up! Signaling threads to stop and collecting results...
+All threads finished.
+
+--- Load Test Results ---
+Total Successful Requests: 1948038
+Total Failed Requests:     0
+Test Duration:             300 s
+
+Average Throughput:      6493.46 reqs/sec
+Average Response Time:   0.442457 ms
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+shivam_sanap@DESKTOP-SHIVAM:~/cs744_project$ taskset -c 2,3 ./load_generator http://127.0.0.1:8080 4 300 get_popular
+--- CS744 Load Generator ---
+Target Server:   http://127.0.0.1:8080
+Load Level:      4 threads
+Test Duration:   300 seconds
+Workload:        get_popular
+
+Starting load test...
+
+Time's up! Signaling threads to stop and collecting results...
+All threads finished.
+
+--- Load Test Results ---
+Total Successful Requests: 1892996
+Total Failed Requests:     0
+Test Duration:             300 s
+
+Average Throughput:      6309.99 reqs/sec
+Average Response Time:   0.61457 ms
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+shivam_sanap@DESKTOP-SHIVAM:~/cs744_project$ taskset -c 2,3 ./load_generator http://127.0.0.1:8080 5 300 get_popular
+--- CS744 Load Generator ---
+Target Server:   http://127.0.0.1:8080
+Load Level:      5 threads
+Test Duration:   300 seconds
+Workload:        get_popular
+-----------------------------
+Starting load test...
+
+Time's up! Signaling threads to stop and collecting results...
+All threads finished.
+
+--- Load Test Results ---
+Total Successful Requests: 2247711
+Total Failed Requests:     0
+Test Duration:             300 s
+
+Average Throughput:      7492.37 reqs/sec
+Average Response Time:   0.640029 ms
