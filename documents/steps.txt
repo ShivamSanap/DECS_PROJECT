@@ -1,0 +1,15 @@
+make ---> to compile the server
+
+./server --->  to start the server (initially in memory cache will be empty)
+
+SELECT * from kv_pairs;
+DELETE FROM kv_pairs;
+
+to insert into db --->  curl -X POST -d "key=<your_key>&value=<your_value>" http://localhost:8080/create
+
+to read from db and cache ---> curl -X GET http://localhost:8080/read?key=<key_value>
+it will check cache first, if hit in cache then return the value from the cache else return from the db
+
+to check the status of the cache ---> curl http://localhost:8080/cache-status
+
+to delete from the db (will also delete from cache if exists) ---> curl -X DELETE http://localhost:8080/delete?key=hello
