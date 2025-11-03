@@ -1,0 +1,5 @@
+# Compiled binary
+server
+
+# Object files
+*.o
