@@ -4,7 +4,7 @@
 #include <string>
 #include <optional>
 #include <mutex>
-#include <libpq-fe.h> // PostgreSQL C API
+#include <libpq-fe.h>
 
 class DBConnector {
 public:
@@ -29,9 +29,6 @@ public:
         return m_conn != nullptr;
     }
 
-    /**
-     * @brief Puts (inserts or updates) a key-value pair into the database.
-     */
     bool put(const std::string& key, const std::string& value) {
         std::lock_guard<std::mutex> lock(m_mutex);
         
@@ -51,9 +48,6 @@ public:
         return true;
     }
 
-    /**
-     * @brief Gets a value by key from the database.
-     */
     std::optional<std::string> get(const std::string& key) {
         std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -69,20 +63,15 @@ public:
         }
 
         if (PQntuples(res) == 0) {
-            // Key not found
             PQclear(res);
             return std::nullopt;
         }
 
-        // Key found, return value
         std::string value = PQgetvalue(res, 0, 0);
         PQclear(res);
         return value;
     }
 
-    /**
-     * @brief Deletes a key-value pair from the database.
-     */
     bool remove(const std::string& key) {
         std::lock_guard<std::mutex> lock(m_mutex);
         
@@ -103,5 +92,5 @@ public:
 
 private:
     PGconn* m_conn;
-    std::mutex m_mutex; // Mutex to protect the connection
+    std::mutex m_mutex; 
 };
