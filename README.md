@@ -12,10 +12,104 @@ The overall goal of this system is to offer a simple, scalable, and consistent k
 
 ![Architecture Diagram](architecture.png)
 
-## Setup Instructions
+Setup Instructions
 
-### 1. Install PostgreSQL
+1. Install PostgreSQL
+
 '''bash
 sudo apt update
 sudo apt install postgresql postgresql-contrib
 '''
+
+2. Install libpqxx (PostgreSQL C++ connector)
+
+'''bash
+sudo apt install libpqxx-dev
+'''
+
+3. Install httplib (HTTP library for C++)
+
+If you are using the header-only version:
+'''bash
+wget https://raw.githubusercontent.com/yhirose/cpp-httplib/master/httplib.h
+
+'''
+Place the httplib.h file inside your project directory.
+
+Steps to Execute
+1. Compile the Server
+
+'''bash
+make
+'''
+
+2. Start the Server
+
+'''bash
+./server
+'''
+Initially, the in-memory cache will be empty.
+
+3. Database Commands
+
+Once PostgreSQL is running and your database is set up, you can manually inspect or modify the table:
+'''sql
+SELECT * FROM kv_pairs;
+DELETE FROM kv_pairs;
+'''
+
+API Endpoints (Testing with curl)
+
+You can interact with the key-value store using simple curl commands.
+
+Insert into Database
+'''bash
+curl -X POST -d "key=<your_key>&value=<your_value>" http://localhost:8080/create
+
+'''
+
+Read from Database and Cache
+'''bash
+curl -X GET http://localhost:8080/read?key=
+<key_value>
+'''
+The server checks the cache first:
+
+If the key is found in cache → returns value directly from cache.
+
+Otherwise → fetches from database, caches it, and then returns it.
+
+Check Cache Status
+'''bash
+curl http://localhost:8080/cache-status
+
+'''
+
+Delete from Database (and Cache if exists)
+'''bash
+curl -X DELETE http://localhost:8080/delete?key=hello
+
+'''
+
+Load Generator (Performance Testing)
+
+The Load Generator simulates multiple clients to test server performance under heavy load.
+
+Run the Load Generator
+
+'''bash
+./load_generator <num_clients> <num_requests_per_client>
+'''
+Each thread represents one simulated client sending multiple requests to the server.
+It helps identify CPU and I/O bottlenecks under concurrent loads.
+
+Notes
+
+Ensure PostgreSQL service is running before starting the server:
+'''bash
+sudo service postgresql start
+'''
+
+The cache operates on an LRU (Least Recently Used) eviction policy.
+
+On restarting the server, data will persist in PostgreSQL but the cache will reset.
