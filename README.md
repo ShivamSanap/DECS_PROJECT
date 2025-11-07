@@ -1,7 +1,7 @@
 <h1 align="center">HTTP Based Key-Value Server with Caching</h1>
 
 <p>
-This project implements an HTTP-based key-value server developed in C++. The system is designed to efficiently store, retrieve, and manage key-value pairs through simple HTTP requests. It combines three main technologies to achieve both performance and reliability:
+This project implements an HTTP-based key-value server developed in C++. The system is designed to efficiently store, retrieve, and manage key-value pairs through simple HTTP requests. It combines three main components:
 
     1. A lightweight HTTP server built using the cpp-httplib library.
     2. An in-memory Least Recently Used (LRU) cache for fast data access.
