@@ -11,3 +11,11 @@ The overall goal of this system is to offer a simple, scalable, and consistent k
 </p>
 
 ![Architecture Diagram](architecture.png)
+
+## Setup Instructions:
+
+1. Install PostgreSQL
+```bash
+sudo apt update
+sudo apt install postgresql postgresql-contrib
+```
