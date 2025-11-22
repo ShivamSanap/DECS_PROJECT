@@ -1,0 +1,83 @@
+shivam_sanap@DESKTOP-SHIVAM:~/cs744_project$ taskset -c 4,5,6,7 ./load_generator http://127.0.0.1:8080 100 300 put_all
+--- CS744 Load Generator ---
+Target Server:   http://127.0.0.1:8080
+Load Level:      100 threads
+Test Duration:   300 seconds
+Workload:        put_all
+-----------------------------
+Starting load test...
+Thread 85 request failed: Connection timed out
+
+Time's up! Stopping threads...
+
+--- Load Test Results ---
+Total Successful Requests: 690797
+Total Failed Requests:     1
+Test Duration:             300 s
+
+Average Throughput:      2302.66 reqs/sec
+Average Response Time:   43.4257 ms
+---------------------------
+shivam_sanap@DESKTOP-SHIVAM:~/cs744_project$ taskset -c 4,5,6,7 ./load_generator http://127.0.0.1:8080 128 300 put_all
+--- CS744 Load Generator ---
+Target Server:   http://127.0.0.1:8080
+Load Level:      128 threads
+Test Duration:   300 seconds
+Workload:        put_all
+-----------------------------
+Starting load test...
+Thread 97 request failed: Connection timed out
+Thread 33 request failed: Connection timed out
+Thread 13 request failed: Failed to read connection
+
+Time's up! Stopping threads...
+
+--- Load Test Results ---
+Total Successful Requests: 741701
+Total Failed Requests:     3
+Test Duration:             300 s
+
+Average Throughput:      2472.34 reqs/sec
+Average Response Time:   51.7666 ms
+---------------------------
+shivam_sanap@DESKTOP-SHIVAM:~/cs744_project$ taskset -c 4,5,6,7 ./load_generator http://127.0.0.1:8080 200 300 put_all
+--- CS744 Load Generator ---
+Target Server:   http://127.0.0.1:8080
+Load Level:      200 threads
+Test Duration:   300 seconds
+Workload:        put_all
+-----------------------------
+Starting load test...
+Thread 40 request failed: Connection timed out
+Thread 3 request failed: Connection timed out
+
+Time's up! Stopping threads...
+
+--- Load Test Results ---
+Total Successful Requests: 701166
+Total Failed Requests:     2
+Test Duration:             300 s
+
+Average Throughput:      2337.22 reqs/sec
+Average Response Time:   85.5772 ms
+---------------------------
+shivam_sanap@DESKTOP-SHIVAM:~/cs744_project$ taskset -c 4,5,6,7 ./load_generator http://127.0.0.1:8080 200 300 put_all
+--- CS744 Load Generator ---
+Target Server:   http://127.0.0.1:8080
+Load Level:      200 threads
+Test Duration:   300 seconds
+Workload:        put_all
+-----------------------------
+Starting load test...
+
+Time's up! Stopping threads...
+
+--- Load Test Results ---
+Total Successful Requests: 679766
+Total Failed Requests:     0
+Test Duration:             300 s
+
+Average Throughput:      2265.89 reqs/sec
+Average Response Time:   88.2818 ms
+---------------------------
+shivam_sanap@DESKTOP-SHIVAM:~/cs744_project$ 
