@@ -3,25 +3,19 @@
 #include <iostream>
 #include <string>
 #include <optional>
-#include <vector>
 #include <queue>
 #include <mutex>
 #include <condition_variable>
 #include <memory>
-#include <libpq-fe.h> // PostgreSQL C API
+#include <libpq-fe.h>
 
-/**
- * @brief A thread-safe pool of PostgreSQL connections.
- * This is the correct way to handle concurrent database access.
- */
 class DBConnectionPool {
 public:
     DBConnectionPool(const std::string& conn_str, size_t pool_size) {
         for (size_t i = 0; i < pool_size; ++i) {
             PGconn* conn = PQconnectdb(conn_str.c_str());
             if (PQstatus(conn) != CONNECTION_OK) {
-                std::cerr << "Failed to create connection " << i << ": "
-                          << PQerrorMessage(conn) << std::endl;
+                std::cerr << "Failed to create connection " << i << ": " << PQerrorMessage(conn) << std::endl;
                 PQfinish(conn);
             } else {
                 m_pool.push(conn);
@@ -30,8 +24,7 @@ public:
         if (m_pool.empty()) {
             std::cerr << "FATAL: No database connections could be established." << std::endl;
         } else {
-            std::cout << "Successfully created connection pool with "
-                      << m_pool.size() << " connections." << std::endl;
+            std::cout << "Successfully created connection pool with " << m_pool.size() << " connections." << std::endl;
         }
     }
 
@@ -46,41 +39,31 @@ public:
         return !m_pool.empty();
     }
 
-    /**
-     * @brief A simple RAII wrapper for a pooled connection.
-     * When this object is created, it gets a connection.
-     * When it goes out of scope, it automatically returns the connection.
-     */
     class PooledConnection {
     public:
-        // Get a connection from the pool (blocks until one is free)
-        PooledConnection(DBConnectionPool& pool) : m_pool(pool) {
+        PooledConnection(DBConnectionPool& pool) : m_pool(pool), m_valid(true) {
             m_conn = m_pool.getConnection();
         }
 
-        // Return the connection to the pool
         ~PooledConnection() {
-            if (m_conn) {
+            if (m_conn && m_valid) {
                 m_pool.returnConnection(m_conn);
             }
         }
 
-        // Get the raw PGconn*
         PGconn* get() { return m_conn; }
 
-        // Disable copy and move
         PooledConnection(const PooledConnection&) = delete;
         PooledConnection& operator=(const PooledConnection&) = delete;
+
+        void invalidate() { m_valid = false; }
 
     private:
         DBConnectionPool& m_pool;
         PGconn* m_conn = nullptr;
+        bool m_valid = false;
     };
 
-    /**
-     * @brief Puts (inserts or updates) a key-value pair into the database.
-     * This is now called with a connection from the pool.
-     */
     bool put(PGconn* conn, const std::string& key, const std::string& value) {
         if (!conn) return false;
         
@@ -100,9 +83,6 @@ public:
         return true;
     }
 
-    /**
-     * @brief Gets a value by key from the database.
-     */
     std::optional<std::string> get(PGconn* conn, const std::string& key) {
         if (!conn) return std::nullopt;
 
@@ -127,9 +107,6 @@ public:
         return value;
     }
 
-    /**
-     * @brief Deletes a key-value pair from the database.
-     */
     bool remove(PGconn* conn, const std::string& key) {
         if (!conn) return false;
         
@@ -149,26 +126,49 @@ public:
     }
 
 private:
-    /**
-     * @brief Gets a connection from the pool. Blocks if all are in use.
-     */
+
     PGconn* getConnection() {
         std::unique_lock<std::mutex> lock(m_mutex);
-        // Wait until the pool is not empty
         m_cond.wait(lock, [this]{ return !m_pool.empty(); });
         
         PGconn* conn = m_pool.front();
         m_pool.pop();
+
+        if (PQstatus(conn) != CONNECTION_OK) {
+            std::cerr << "Connection lost. Attempting to reset..." << std::endl;
+            PQreset(conn);
+            if (PQstatus(conn) != CONNECTION_OK) {
+                std::cerr << "Connection reset failed: " << PQerrorMessage(conn) << std::endl;
+            }
+        }
+
         return conn;
     }
 
-    /**
-     * @brief Returns a connection to the pool and notifies a waiting thread.
-     */
+    PGconn* getConnectionWithTimeout(int timeout_ms) {
+        std::unique_lock<std::mutex> lock(m_mutex);
+        if (!m_cond.wait_for(lock, std::chrono::milliseconds(timeout_ms), [this]{ return !m_pool.empty(); })) {
+            std::cerr << "Timeout waiting for database connection." << std::endl;
+            return nullptr;
+        }
+
+        PGconn* conn = m_pool.front();
+        m_pool.pop();
+
+        if (PQstatus(conn) != CONNECTION_OK) {
+            PQreset(conn);
+            if (PQstatus(conn) != CONNECTION_OK) {
+                std::cerr << "Connection reset failed: " << PQerrorMessage(conn) << std::endl;
+            }
+        }
+
+        return conn;
+    }
+
     void returnConnection(PGconn* conn) {
         std::lock_guard<std::mutex> lock(m_mutex);
         m_pool.push(conn);
-        m_cond.notify_one(); // Wake up one waiting thread
+        m_cond.notify_one();
     }
 
     std::queue<PGconn*> m_pool;
