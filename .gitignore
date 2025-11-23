@@ -1,5 +1,6 @@
 # Compiled binary
 server
+load_generator
 
 # Object files
 *.o
