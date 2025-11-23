@@ -54,3 +54,21 @@ This command will also delete the key value pair from the cache (if exists).
 ```bash
 curl http://localhost:8080/cache-status
 ```
+
+## Load Test Setup:
+
+To pin DB to some cores:
+```
+ps -fp $(pgrep -u postgres)
+sudo taskset -pc <core(s)> <pid>
+```
+
+To pin server to some cores:
+```
+taskset -c <core(s)> ./server
+```
+
+To pin load generator to some cores:
+```
+taskset -c <core(s)> ./load_generator http://127.0.0.1:8080 <no. of thread(s)> <duration> <workload>
+```
